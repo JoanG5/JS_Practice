@@ -1,6 +1,7 @@
 const gameBoard = document.querySelector("#gameBoard");
 const ctx = gameBoard.getContext("2d");
 const playBtn = document.querySelector("#playBtn");
+const pauseBtn = document.querySelector("#pauseBtn");
 const nextBtn = document.querySelector("#nextBtn");
 const resetBtn = document.querySelector("#resetBtn");
 const gameWidth = gameBoard.width;
@@ -11,10 +12,23 @@ const dead = "white";
 const unitSize = 25;
 const row = gameHeight / unitSize;
 const col = gameWidth / unitSize;
+let running = false;
 let born = [];
 
 
+gameBoard.addEventListener("click", function (e){
+    if (!running){
+        x = Math.floor((e.clientX - gameBoard.getBoundingClientRect().x - 3) / unitSize) * unitSize;
+        y = Math.floor((e.clientY - gameBoard.getBoundingClientRect().y - 3) / unitSize) * unitSize;
+        ctx.fillStyle = alive;
+        ctx.fillRect(x, y, unitSize, unitSize);
+    }
+})
+
 playBtn.addEventListener("click", play);
+pauseBtn.addEventListener("click", function(e){
+    running = false;
+})
 nextBtn.addEventListener("click", nextTick);
 resetBtn.addEventListener("click", reset);
 
@@ -78,17 +92,24 @@ function switchColor(x, y, status){
 }
 
 function play(){
-    setTimeout(() => {
-        for(let y = 0; y < row; y++){
-            for(let x = 0; x < col; x++){
-                survive(x * unitSize, y * unitSize);
+    running = true
+    gameRun();
+}
+
+function gameRun(){
+    if (running){
+        setTimeout(() => {
+            for(let y = 0; y < row; y++){
+                for(let x = 0; x < col; x++){
+                    survive(x * unitSize, y * unitSize);
+                }
             }
+            newBoard();
+            grid();
+            gameRun();
         }
-        newBoard();
-        grid();
-        play();
+        , 500);
     }
-    , 500);
 }
 
 function nextTick(){
@@ -102,13 +123,9 @@ function nextTick(){
 }
 
 function reset(){
+    running = false;
     ctx.clearRect(0, 0, gameWidth, gameHeight);
     grid();
 }
-
-ctx.fillStyle = alive;
-ctx.fillRect(0, 0, unitSize, unitSize);
-ctx.fillRect(25, 0, unitSize, unitSize);
-ctx.fillRect(50, 0, unitSize, unitSize);
 
 grid();
